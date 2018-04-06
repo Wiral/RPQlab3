@@ -62,6 +62,7 @@ PWDproc::PWDproc(std::fstream& file) {
 		file >> d;
 		_tasks[i] = PWDtask(p,w,d);
 	}
+
 }
 
 int main() {
