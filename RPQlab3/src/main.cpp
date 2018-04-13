@@ -4,20 +4,37 @@
 
 //Task class
 class PWDtask {
-	 int _p; 	// preparing time
-	 int _w ;	// processing time
-	 int _d;	// quiting time
+	int _p; 	// preparing time
+	int _w;	// processing time
+	int _d;	// quiting time
 	// int _t;
 public:
-	PWDtask( int p, int w, int d): _p(p),_w(w), _d(d) {} //init with default times for the current process, init starting time with the preparing time
-	PWDtask(): _p(0), _w(0), _d(0){}
-	void setP( int p) { _p = p;}
+	PWDtask(int p, int w, int d) :
+			_p(p), _w(w), _d(d) {
+	} //init with default times for the current process, init starting time with the preparing time
+	PWDtask() :
+			_p(0), _w(0), _d(0) {
+	}
+	void setP(int p) {
+		_p = p;
+	}
 	//void setT(int t) { _t = t;}
-	void setW( int w) { _w = w;}
-	void setD( int d) { _d = d;}
-	const int p() const {return _p;}
-	const int w() const {return _w;}
-	const int d() const {return _d;}
+	void setW(int w) {
+		_w = w;
+	}
+	void setD(int d) {
+		_d = d;
+	}
+	const int p() const {
+		return _p;
+	}
+	const int w() const {
+		return _w;
+	}
+	const int d() const {
+		return _d;
+	}
+
 	//const int t() const {return _t;}
 };
 
@@ -36,13 +53,14 @@ public:
 		return _numTasks;
 	}	//number of tasks in the _task array
 	int tardness();
+	int dynamic();
 };
 
-int PWDproc::tardness(){
+int PWDproc::tardness() {
 	int c = 0;
 	int t = 0;
 	int i = 0;
-	for(; i < _numTasks; i++){
+	for (; i < _numTasks; i++) {
 		c += _tasks[i].p();
 		t += std::max(c - _tasks[i].d(), 0) * _tasks[i].w();
 	}
@@ -50,9 +68,38 @@ int PWDproc::tardness(){
 	return t;
 }
 
+int PWDproc::dynamic() {
+	int tard, tmp;
+	int i, j;
+	tard = tardness();
+	i = 0;
+	j = 1;
+	while (i < _numTasks - 1) {
+		std::swap(_tasks[i], _tasks[j]);
+		tmp = tardness();
+
+		if (tmp >= tard) { //time got worse, revert change and proceed
+			std::swap(_tasks[i], _tasks[j]);
+			j++;
+		} else {
+			tard = tmp;
+			i = 0;
+			j = 1;
+		}
+
+		if (j >= _numTasks) {	//iterator got to the end of array, proceed
+			i++;
+			j = i + 1;
+		}
+	}
+
+	return tard;
+}
+
+
 //initialize structure with tasks specified in a file
 PWDproc::PWDproc(std::fstream& file) {
-	int p,w,d, i;
+	int p, w, d, i;
 	file >> _numTasks;
 	_tasks = new PWDtask[_numTasks];
 
@@ -60,7 +107,7 @@ PWDproc::PWDproc(std::fstream& file) {
 		file >> p;
 		file >> w;
 		file >> d;
-		_tasks[i] = PWDtask(p,w,d);
+		_tasks[i] = PWDtask(p, w, d);
 	}
 
 }
@@ -81,7 +128,7 @@ int main() {
 			if (file.is_open()) {//open file and read data. Save it to the txt file.
 				std::cout << "==== " << path << " ====" << std::endl;
 				PWDproc process(file);
-				std::cout << "T: " << process.tardness() <<std::endl;
+				std::cout << "T: " << process.dynamic() << std::endl;
 				file.close();
 			}
 		}
@@ -90,5 +137,4 @@ int main() {
 
 	return 0;
 }
-
 
